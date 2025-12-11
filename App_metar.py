@@ -145,7 +145,7 @@ def analyser_metar_detaille(metar):
 st.set_page_config(page_title="Décodeur METAR", page_icon="✈️", layout="centered")
 
 st.title("METAR")
-st.caption("Décodeur temps réel & Analyse de tendance (2h)")
+st.caption("Décodeur temps réel  &  Analyse de tendance (2h)")
 
 oaci = st.text_input("Code OACI", value="LFQQ", max_chars=4).upper()
 
