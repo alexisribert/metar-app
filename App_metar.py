@@ -5,6 +5,7 @@ import re
 # --- FONCTIONS DE RÉCUPÉRATION ET DÉCODAGE ---
 
 def recuperer_metar(oaci):
+    # Utilisation de f-string sans espaces parasites
     url = f"https://tgftp.nws.noaa.gov/data/observations/metar/stations/{oaci.upper()}.TXT"
     try:
         r = requests.get(url, timeout=5)
@@ -47,7 +48,7 @@ def analyser_bloc_tendance(trend_raw):
     
     for bloc in blocs:
         message = ""
-        # 1. [span_4](start_span)Type d'évolution[span_4](end_span)
+        # 1. Type d'évolution
         if "TEMPO" in bloc:
             message += "⚡ **Temporairement** (Fluctuation < 1h) : "
         elif "BECMG" in bloc:
@@ -57,7 +58,7 @@ def analyser_bloc_tendance(trend_raw):
         details = []
         
         for t in tokens:
-            # [span_5](start_span)Horaires (FM=From, TL=Until, AT=At)[span_5](end_span)
+            # Horaires (FM=From, TL=Until, AT=At)
             if t.startswith("FM"):
                 details.append(f"à partir de {t[2:4]}h{t[4:6]} UTC")
             elif t.startswith("TL"):
@@ -65,17 +66,16 @@ def analyser_bloc_tendance(trend_raw):
             elif t.startswith("AT"):
                 details.append(f"à {t[2:4]}h{t[4:6]} UTC")
             
-            # Paramètres météo (Même logique que le corps principal)
+            # Paramètres météo
             elif re.match(r'^\d{4}$', t):
                 v = "> 10 km" if t == "9999" else f"{int(t)} m"
                 details.append(f"Visibilité {v}")
             elif re.match(r'^(VRB|\d{3})\d{2}(G\d{2})?KT$', t):
                 details.append(f"Vent {t}")
             elif re.match(r'^(FEW|SCT|BKN|OVC|VV)\d{3}(CB|TCU)?$', t) or t == "NSC":
-                # Simplification pour l'affichage tendance
                 if t == "NSC": details.append("Nuages sans importance")
                 else: details.append(f"Plafond {t}")
-            [span_6](start_span) elif t == 'NSW':
+            elif t == 'NSW':
                  details.append("Fin du temps significatif")
             elif any(code in t for code in ['RA', 'SN', 'FG', 'BR', 'TS', 'SH', 'DZ']):
                 details.append(decoder_phenomenes(t))
@@ -85,7 +85,9 @@ def analyser_bloc_tendance(trend_raw):
         if changes:
             analyses.append(f"{message} {changes}")
         else:
-            analyses.append(f"{message} (Paramètres non décodés : {bloc})")
+            # Si le bloc est vide ou non parsé correctement (ex: juste BECMG sans info)
+            if len(message) > 5:
+                analyses.append(f"{message} (Paramètres non décodés : {bloc})")
             
     return analyses
 
@@ -104,7 +106,6 @@ def analyser_metar_detaille(metar):
         split_idx = match_trend.start()
         main_part = metar[:split_idx]
         data["tendance_raw"] = metar[split_idx:]
-        # Analyse spécifique de la tendance
         data["tendance_analyse"] = analyser_bloc_tendance(data["tendance_raw"])
     else:
         main_part = metar
@@ -143,7 +144,7 @@ def analyser_metar_detaille(metar):
 # --- INTERFACE STREAMLIT ---
 st.set_page_config(page_title="Décodeur METAR", page_icon="✈️", layout="centered")
 
-st.title("METAR")
+st.title("✈️ Météo Aéronautique")
 st.caption("Décodeur temps réel & Analyse de tendance (2h)")
 
 oaci = st.text_input("Code OACI", value="LFQQ", max_chars=4).upper()
@@ -156,9 +157,9 @@ if st.button("Actualiser", type="primary"):
             d = analyser_metar_detaille(raw)
             
             # En-tête Date/Heure
-            if d['jour']: st.success(f"**{d['jour']} à {d['heure']}** (Publication)")
+            if d['jour']: st.success(f"📅 **{d['jour']} à {d['heure']}** (Publication)")
             
-            # Affichage Brut (replié par défaut)
+            # Affichage Brut
             with st.expander("Message METAR brut"):
                 st.code(raw, language="text")
 
@@ -179,7 +180,6 @@ if st.button("Actualiser", type="primary"):
             # --- Conditions Actuelles ---
             st.markdown("### Conditions Actuelles")
             
-            # Alerte Spread (Brouillard/Givrage)
             if d['temp'] is not None and d['dew'] is not None and (d['temp'] - d['dew']) <= 2:
                  st.warning(f"⚠️ **Attention :** Écart Temp/Rosée faible ({d['temp']-d['dew']}°C). Risque de brouillard ou givrage.")
 
@@ -198,24 +198,23 @@ if st.button("Actualiser", type="primary"):
 
             # --- Analyse de Tendance (2h) ---
             st.divider()
-            st.subheader("Prévision immédiate (Tendance 2h)")
+            st.subheader("🔮 Prévision immédiate (Tendance 2h)")
             
             if d['tendance_analyse']:
                 for item in d['tendance_analyse']:
                     if "Aucun changement" in item:
                         st.success(item)
                     elif "Temporairement" in item:
-                        st.warning(item) # Jaune pour le TEMPO
+                        st.warning(item)
                     else:
-                        st.info(item) # Bleu pour le BECMG
+                        st.info(item)
                 
-                # Petit rappel pédagogique du guide
                 with st.expander("Comprendre la tendance"):
                     st.markdown("""
                     *Validité : 2 heures à partir de l'observation.*
-                    - **[span_7](start_span)NOSIG** : Pas de changement significatif[span_7](end_span).
-                    - **[span_8](start_span)BECMG** : Changement durable qui s'installe[span_8](end_span).
-                    - **[span_9](start_span)TEMPO** : Fluctuation temporaire (moins d'une heure)[span_9](end_span).
+                    - **NOSIG** : Pas de changement significatif.
+                    - **BECMG** : Changement durable qui s'installe.
+                    - **TEMPO** : Fluctuation temporaire (moins d'une heure).
                     """)
             else:
                 st.markdown("Pas de données de tendance disponibles dans ce message.")
