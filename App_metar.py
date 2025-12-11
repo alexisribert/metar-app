@@ -26,7 +26,8 @@ def decoder_metar_pour_affichage(metar):
     explications = []
     
     # 1. Vent (Direction, Vitesse, Rafales) - Guide p.16
-    vent = re.search(r’\b(VRB|\d{3})(\d{2})(G\d{2})?KT\b’, metar)
+    vent = re.search(r'\b(VRB|\d{3})(\d{2})(G\d{2})?KT\b', metar)
+
     if vent:
         d, s, g = vent.groups()
         dir_txt = « Variable » if d == « VRB » else f »{d}° »
