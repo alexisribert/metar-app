@@ -40,7 +40,7 @@ def decoder_phenomenes(token):
 def analyser_bloc_tendance(trend_raw):
     """Analyse détaillée de la partie tendance (BECMG, TEMPO...)"""
     if "NOSIG" in trend_raw:
-        return ["✅ **Aucun changement significatif prévu** dans les 2 prochaines heures."]
+        return ["**Aucun changement significatif prévu** dans les 2 prochaines heures."]
 
     analyses = []
     # On découpe s'il y a plusieurs tendances successives
@@ -50,9 +50,9 @@ def analyser_bloc_tendance(trend_raw):
         message = ""
         # 1. Type d'évolution
         if "TEMPO" in bloc:
-            message += "⚡ **Temporairement** (Fluctuation < 1h) : "
+            message += "**Temporairement** (Fluctuation < 1h) : "
         elif "BECMG" in bloc:
-            message += "➡️ **Évolution progressive** (Devenant) : "
+            message += "**Évolution progressive** (Devenant) : "
         
         tokens = bloc.split()
         details = []
@@ -144,7 +144,7 @@ def analyser_metar_detaille(metar):
 # --- INTERFACE STREAMLIT ---
 st.set_page_config(page_title="Décodeur METAR", page_icon="✈️", layout="centered")
 
-st.title("✈️ Météo Aéronautique")
+st.title("METAR")
 st.caption("Décodeur temps réel & Analyse de tendance (2h)")
 
 oaci = st.text_input("Code OACI", value="LFQQ", max_chars=4).upper()
@@ -157,7 +157,7 @@ if st.button("Actualiser", type="primary"):
             d = analyser_metar_detaille(raw)
             
             # En-tête Date/Heure
-            if d['jour']: st.success(f"📅 **{d['jour']} à {d['heure']}** (Publication)")
+            if d['jour']: st.success(f"**{d['jour']} à {d['heure']}** (Publication)")
             
             # Affichage Brut
             with st.expander("Message METAR brut"):
@@ -198,7 +198,7 @@ if st.button("Actualiser", type="primary"):
 
             # --- Analyse de Tendance (2h) ---
             st.divider()
-            st.subheader("🔮 Prévision immédiate (Tendance 2h)")
+            st.subheader("Prévision immédiate (Tendance 2h)")
             
             if d['tendance_analyse']:
                 for item in d['tendance_analyse']:
