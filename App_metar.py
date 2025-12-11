@@ -9,7 +9,7 @@ def recuperer_metar(oaci):
     try:
         r = requests.get(url, timeout=5)
         if r.status_code == 200:
-            lines = r.text.strip().split(‘\n’)
+            lines = r.text.strip().split('\n')
             # On cherche la ligne qui commence par le code OACI
             for line in lines:
                 if line.startswith(oaci.upper()):
