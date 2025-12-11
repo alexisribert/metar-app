@@ -5,7 +5,7 @@ import re
 # — FONCTIONS DE DÉCODAGE (Basées sur le Guide Aviation Météo-France) —
 def recuperer_metar(oaci):
     # Récupération via NOAA
-    url = f "https://tgftp.nws.noaa.gov/data/observations/metar/stations/{oaci.upper()}.TXT"
+    url = f"https://tgftp.nws.noaa.gov/data/observations/metar/stations/{oaci.upper()}.TXT"
     try:
         r = requests.get(url, timeout=5)
         if r.status_code == 200:
