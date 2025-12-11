@@ -21,7 +21,7 @@ def recuperer_metar(oaci):
 
 def decoder_metar_pour_affichage(metar):
     if not metar:
-        return « Données indisponibles. »
+        return "Données indisponibles."
         
     explications = []
     
