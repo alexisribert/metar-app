@@ -74,6 +74,7 @@ def analyser_bloc_tendance(trend_raw):
                 details.append(f"Vent {t}")
             elif re.match(r'^(FEW|SCT|BKN|OVC|VV)\d{3}(CB|TCU)?$', t) or t == "NSC":
                 if t == "NSC": details.append("Nuages sans importance")
+                elif t.startswith("VV"): details.append(f"Ciel invisible ({t})")
                 else: details.append(f"Plafond {t}")
             elif t == 'NSW':
                  details.append("Fin du temps significatif")
@@ -85,7 +86,6 @@ def analyser_bloc_tendance(trend_raw):
         if changes:
             analyses.append(f"{message} {changes}")
         else:
-            # Si le bloc est vide ou non parsé correctement (ex: juste BECMG sans info)
             if len(message) > 5:
                 analyses.append(f"{message} (Paramètres non décodés : {bloc})")
             
@@ -130,10 +130,24 @@ def analyser_metar_detaille(metar):
             data["temp"] = int(t_val.replace('M', '-'))
             if d_val != '//': data["dew"] = int(d_val.replace('M', '-'))
         elif re.match(r'^Q\d{3,4}$', t): data["qnh"] = int(t[1:])
+        
+        # --- BLOC NUAGES MIS A JOUR ---
         elif re.match(r'^(FEW|SCT|BKN|OVC|VV)(\d{3}|///)(CB|TCU)?$', t):
-            tn, ht, cb = re.match(r'^(FEW|SCT|BKN|OVC|VV)(\d{3}|///)(CB|TCU)?$', t).groups()
-            h_txt = f"{int(ht)*100} ft" if ht != '///' else "H. inconnue"
-            data["nuages"].append(f"{tn} {h_txt} {cb or ''}")
+            match_cloud = re.match(r'^(FEW|SCT|BKN|OVC|VV)(\d{3}|///)(CB|TCU)?$', t)
+            type_n = match_cloud.group(1)
+            haut = match_cloud.group(2)
+            cb = match_cloud.group(3) or ""
+
+            # Gestion spécifique du VV (Ciel invisible)
+            if type_n == "VV":
+                h_txt = f"Visibilité vert. {int(haut)*100} ft" if haut != '///' else "Hauteur indéterminée"
+                data["nuages"].append(f"Ciel invisible ({h_txt})")
+            else:
+                # Gestion classique des nuages
+                h_txt = f"{int(haut)*100} ft" if haut != '///' else "H. inconnue"
+                noms = {'FEW': 'Peu (1-2/8)', 'SCT': 'Épars (3-4/8)', 'BKN': 'Fragmenté (5-7/8)', 'OVC': 'Couvert (8/8)'}
+                data["nuages"].append(f"{noms.get(type_n, type_n)} à {h_txt}{' ⚠️ '+cb if cb else ''}")
+        
         else:
             codes = ['DZ', 'RA', 'SN', 'GR', 'BR', 'FG', 'FU', 'HZ', 'TS', 'SH']
             clean = t.replace('-','').replace('+','').replace('VC','')
@@ -145,7 +159,7 @@ def analyser_metar_detaille(metar):
 st.set_page_config(page_title="Décodeur METAR", page_icon="✈️", layout="centered")
 
 st.title("METAR")
-st.caption("Décodeur temps réel  &  Analyse de tendance (2h)")
+st.caption("Décodeur temps réel & Analyse de tendance (2h)")
 
 oaci = st.text_input("Code OACI", value="LFQQ", max_chars=4).upper()
 
