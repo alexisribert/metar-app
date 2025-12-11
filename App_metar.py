@@ -75,7 +75,7 @@ def analyser_bloc_tendance(trend_raw):
                 # Simplification pour l'affichage tendance
                 if t == "NSC": details.append("Nuages sans importance")
                 else: details.append(f"Plafond {t}")
-            [span_6](start_span)elif t in ['NSW']: #[span_6](end_span)
+            [span_6](start_span) elif t == 'NSW':
                  details.append("Fin du temps significatif")
             elif any(code in t for code in ['RA', 'SN', 'FG', 'BR', 'TS', 'SH', 'DZ']):
                 details.append(decoder_phenomenes(t))
