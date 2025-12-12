@@ -156,7 +156,11 @@ def analyser_metar_detaille(metar):
     return data
 
 # --- INTERFACE STREAMLIT ---
-st.set_page_config(page_title="Décodeur METAR", page_icon="✈️", layout="centered")
+
+url_icone = "https://raw.githubusercontent.com/alexisribert/metar-app/main/logo.jpeg"
+
+st.set_page_config(page_title="METAR", page_icon=url_icone, layout="centered")
+
 
 st.title("METAR")
 st.caption("Décodeur temps réel & Analyse de tendance (2h)")
