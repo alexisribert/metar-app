@@ -161,11 +161,11 @@ url_icone = "https://raw.githubusercontent.com/alexisribert/metar-app/main/logo.
 
 st.set_page_config(page_title="METAR", page_icon=url_icone, layout="centered")
 
-if URL_ICONE.startswith("http"):
+if url_icone.startswith("http"):
     st.markdown(
         f"""
         <head>
-            <link rel="apple-touch-icon" href="{URL_ICONE}">
+            <link rel="apple-touch-icon" href="{url_icone}">
         </head>
         """,
         unsafe_allow_html=True
