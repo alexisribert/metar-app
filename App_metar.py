@@ -161,6 +161,15 @@ url_icone = "https://raw.githubusercontent.com/alexisribert/metar-app/main/logo.
 
 st.set_page_config(page_title="METAR", page_icon=url_icone, layout="centered")
 
+if URL_ICONE.startswith("http"):
+    st.markdown(
+        f"""
+        <head>
+            <link rel="apple-touch-icon" href="{URL_ICONE}">
+        </head>
+        """,
+        unsafe_allow_html=True
+    )
 
 st.title("METAR")
 st.caption("Décodeur temps réel & Analyse de tendance (2h)")
