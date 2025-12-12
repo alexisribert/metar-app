@@ -162,14 +162,25 @@ url_icone = "https://raw.githubusercontent.com/alexisribert/metar-app/main/logo.
 st.set_page_config(page_title="METAR", page_icon=url_icone, layout="centered")
 
 if url_icone.startswith("http"):
-    st.markdown(
-        f"""
-        <head>
-            <link rel="apple-touch-icon" href="{url_icone}">
-        </head>
-        """,
-        unsafe_allow_html=True
-    )
+    js_code = f"""
+    <script>
+        // On attend que la page soit chargée
+        function setAppleTouchIcon() {{
+            var link = window.parent.document.querySelector("link[rel*='apple-touch-icon']");
+            if (!link) {{
+                link = window.parent.document.createElement('link');
+                link.rel = 'apple-touch-icon';
+                window.parent.document.getElementsByTagName('head')[0].appendChild(link);
+            }}
+            link.href = '{url_icone}';
+        }}
+        // Exécution immédiate et différée pour être sûr
+        setAppleTouchIcon();
+        setTimeout(setAppleTouchIcon, 1000); 
+    </script>
+    """
+    # Insertion du script invisible
+    components.html(js_code, height=0)
 
 st.title("METAR")
 st.caption("Décodeur temps réel & Analyse de tendance (2h)")
